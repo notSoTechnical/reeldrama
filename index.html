@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReelDrama — AI-Native Microdrama Studio</title>
+<meta name="description" content="ReelDrama is an AI-native microdrama studio. Vertical short-form drama series — 60 to 90 second episodes — produced in days, in English and Chinese.">
+<style>
+  :root{--bg:#0b0b0e;--panel:#141419;--gold:#c9a45c;--gold2:#e8cf8f;--text:#f2efe9;--muted:#a7a29a;--line:#26262e}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:Georgia,'Times New Roman',serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--gold2);text-decoration:none}
+  header{position:sticky;top:0;background:rgba(11,11,14,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:10}
+  .nav{max-width:1080px;margin:0 auto;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+  .logo{font-size:26px;letter-spacing:1px}.logo b{color:var(--gold)}
+  .nav nav a{margin-left:22px;color:var(--muted);font-family:Helvetica,Arial,sans-serif;font-size:14px}
+  .nav nav a:hover{color:var(--gold2)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  .hero{padding:72px 0 48px;text-align:center}
+  .kicker{font-family:Helvetica,Arial,sans-serif;letter-spacing:3px;font-size:12px;color:var(--gold);text-transform:uppercase}
+  .hero h1{font-size:44px;line-height:1.15;margin:18px auto;max-width:760px;font-weight:normal}
+  .hero h1 em{color:var(--gold2)}
+  .hero p{color:var(--muted);font-size:18px;max-width:640px;margin:0 auto 28px;line-height:1.6}
+  .btn{display:inline-block;background:var(--gold);color:#111;padding:13px 30px;border-radius:999px;font-family:Helvetica,Arial,sans-serif;font-size:15px;border:none;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--gold2);border:1px solid var(--gold);margin-left:10px}
+  section{padding:48px 0;border-top:1px solid var(--line)}
+  h2{font-size:30px;font-weight:normal;margin-bottom:8px}
+  .sub{color:var(--muted);margin-bottom:28px;line-height:1.6;max-width:680px}
+  .watch{display:grid;grid-template-columns:300px 1fr;gap:36px;align-items:start}
+  @media(max-width:760px){.watch{grid-template-columns:1fr}.hero h1{font-size:32px}}
+  .phone{width:270px;margin:0 auto;background:#000;border:1px solid var(--line);border-radius:36px;padding:12px}
+  .screen{border-radius:26px;background:linear-gradient(160deg,#3a2b18,#141419 55%,#1d1428);height:480px;display:flex;flex-direction:column;justify-content:flex-end;padding:20px;position:relative;overflow:hidden}
+  .screen .badge{position:absolute;top:16px;left:16px;background:rgba(0,0,0,.55);color:var(--gold2);font-family:Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:2px;padding:5px 10px;border-radius:999px}
+  .screen h3{font-size:22px;line-height:1.3;margin-bottom:6px}
+  .screen p{color:#d8d2c4;font-size:14px;line-height:1.5;font-family:Helvetica,Arial,sans-serif}
+  .play{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;border:1px solid var(--gold);background:rgba(0,0,0,.45);color:var(--gold2);font-size:22px;cursor:pointer}
+  .eps{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .ep{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;text-align:left;color:var(--text);font-family:Helvetica,Arial,sans-serif}
+  .ep:hover{border-color:var(--gold)}
+  .ep .n{color:var(--gold);font-size:12px;letter-spacing:1px}
+  .ep .t{font-size:14px;margin-top:5px;line-height:1.4}
+  .ep .lock{float:right}
+  .slate{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+  .card{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel)}
+  .poster{height:300px;display:flex;align-items:flex-end;padding:18px}
+  .p1{background:linear-gradient(165deg,#4a3517,#191921 60%)}
+  .p2{background:linear-gradient(165deg,#3c1f2e,#191921 60%)}
+  .p3{background:linear-gradient(165deg,#173a3f,#191921 60%)}
+  .poster h3{font-size:21px;line-height:1.3}
+  .card .body{padding:16px 18px;color:var(--muted);font-size:14.5px;line-height:1.6;font-family:Helvetica,Arial,sans-serif}
+  .tag{display:inline-block;border:1px solid var(--gold);color:var(--gold2);border-radius:999px;padding:3px 10px;font-size:11.5px;margin-bottom:10px;letter-spacing:1px}
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
+  .col{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .col h3{color:var(--gold2);font-size:18px;margin-bottom:10px;font-weight:normal}
+  .col p{color:var(--muted);font-size:14.5px;line-height:1.65;font-family:Helvetica,Arial,sans-serif}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;text-align:center}
+  .stat .big{font-size:34px;color:var(--gold2)}
+  .stat p{color:var(--muted);font-size:13.5px;margin-top:6px;font-family:Helvetica,Arial,sans-serif;line-height:1.5}
+  footer{border-top:1px solid var(--line);padding:36px 0 48px;color:var(--muted);font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:1.7}
+  .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;align-items:center;justify-content:center}
+  .modal .box{background:var(--panel);border:1px solid var(--gold);border-radius:18px;max-width:400px;width:90%;padding:32px;text-align:center}
+  .modal h3{font-size:24px;margin-bottom:10px}
+  .modal p{color:var(--muted);line-height:1.6;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:20px}
+</style>
+</head>
+<body>
+<header><div class="nav">
+  <div class="logo">Reel<b>Drama</b></div>
+  <nav><a href="#watch">Watch</a><a href="#slate">Series</a><a href="#studio">Studio</a><a href="#investors">Investors</a></nav>
+</div></header>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="kicker">AI-Native Microdrama Studio</div>
+    <h1>A whole drama series, <em>in your pocket,</em> one minute at a time.</h1>
+    <p>ReelDrama produces original vertical drama — 60 to 90 second episodes, 50 to 80 episodes per series — with an AI-native pipeline that turns a script into a finished series in days, in English and Chinese.</p>
+    <a class="btn" href="#watch">Watch the pilot</a>
+    <a class="btn ghost" href="#investors">For investors</a>
+  </div>
+
+  <section id="watch">
+    <h2>Now showing — pilot series</h2>
+    <p class="sub"><b style="color:var(--gold2)">The Tenant Who Owned the Building.</b> A landlord serves an eviction notice on her quietest tenant. That same day, he buys the building. Episodes 1–10 are free. The pilot is in production now — the first episodes premiere here.</p>
+    <div class="watch">
+      <div class="phone"><div class="screen">
+        <div class="badge">PILOT · EP <span id="epNum">1</span></div>
+        <button class="play" onclick="playEp()">▶</button>
+        <h3 id="epTitle">The Notice</h3>
+        <p id="epDesc">Landlord Vivian Cole tapes an eviction notice to Daniel's door. He reads it, smiles — and makes one phone call.</p>
+      </div></div>
+      <div class="eps" id="eps"></div>
+    </div>
+  </section>
+
+  <section id="slate">
+    <h2>The slate</h2>
+    <p class="sub">Original series, owned outright. Every title ships in English and Chinese from the same production assets.</p>
+    <div class="slate">
+      <div class="card"><div class="poster p1"><h3>The Tenant Who Owned the Building</h3></div>
+        <div class="body"><span class="tag">IN PRODUCTION</span><br>Revenge-romance · 60 episodes. She tried to evict him. He owned more than the building — he owned her mortgage.</div></div>
+      <div class="card"><div class="poster p2"><h3>Married by Midnight</h3></div>
+        <div class="body"><span class="tag">IN DEVELOPMENT</span><br>Contract-marriage billionaire drama · 70 episodes. A wedding contract signed at midnight. Neither of them read the last page.</div></div>
+      <div class="card"><div class="poster p3"><h3>Divorced at the Signing Table</h3></div>
+        <div class="body"><span class="tag">IN DEVELOPMENT</span><br>Female-led revenge · 65 episodes. She signed the divorce papers smiling — because she had already bought his company.</div></div>
+    </div>
+  </section>
+
+  <section id="studio">
+    <h2>How ReelDrama works</h2>
+    <p class="sub">Traditional microdrama is shot live-action at $150K–$300K per series. Our pipeline replaces the shoot, not the storyteller.</p>
+    <div class="cols">
+      <div class="col"><h3>1 · Story first</h3><p>Human-written hooks and cliffhangers, one per episode. Every episode ends on a reason to tap "next."</p></div>
+      <div class="col"><h3>2 · AI production</h3><p>Locked character sheets keep faces and worlds consistent across 80 episodes. Scenes, voices, captions and both language versions are generated by the pipeline.</p></div>
+      <div class="col"><h3>3 · Free everywhere</h3><p>First episodes premiere free on TikTok, Instagram Reels and YouTube Shorts, where the audience already lives.</p></div>
+      <div class="col"><h3>4 · Our own paywall</h3><p>Full series unlock here — episode coins or unlimited at $19.99/month. We own the audience and the margin.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The market</h2>
+    <p class="sub">Microdrama is the fastest-growing format in mobile entertainment.</p>
+    <div class="stats">
+      <div class="stat"><div class="big">~$14B</div><p>Global microdrama revenue projected for 2026 (Omdia)</p></div>
+      <div class="stat"><div class="big">850M+</div><p>Short-drama app downloads in Q1 2026 alone (Sensor Tower)</p></div>
+      <div class="stat"><div class="big">~$750M</div><p>In-app purchases in Q1 2026 (Sensor Tower)</p></div>
+      <div class="stat"><div class="big">Days</div><p>Our time from script to a finished series — not months</p></div>
+    </div>
+  </section>
+
+  <section id="investors">
+    <h2>For investors &amp; partners</h2>
+    <p class="sub">ReelDrama is a pre-seed company founded in November 2026 by Anni Yang — a solo technical founder (B.S. Electrical Engineering, University of Massachusetts, Magna Cum Laude; Fortune 500 systems engineer) who previously built an AI reels engine and produced a 100-episode AI video series end to end. We are raising to scale series production and launch the ReelDrama app. The same production pipeline is also available to license to studios and creators.</p>
+    <p class="sub">Partnerships and investor inquiries: <a href="mailto:info@annizon.com">info@annizon.com</a></p>
+    <button class="btn" onclick="joinList()">Join the premiere list</button>
+    <p id="joined" style="color:var(--gold2);margin-top:14px;font-family:Helvetica,Arial,sans-serif"></p>
+  </section>
+</div>
+
+<footer><div class="wrap">
+  ReelDrama — an AI-native microdrama studio. Founded 2026, Clifton, Virginia, USA.<br>
+  All series are original works. AI is used as a production tool; stories and creative decisions are human-led.
+</div></footer>
+
+<div class="modal" id="modal"><div class="box">
+  <h3 id="mTitle">Episode locked</h3>
+  <p id="mText">Episodes 11 and beyond unlock with ReelDrama Unlimited — $19.99/month, every series, both languages. Subscriptions open at the pilot premiere.</p>
+  <button class="btn" onclick="closeModal()">Got it</button>
+</div></div>
+
+<script>
+var EPS=[
+ ["The Notice","Landlord Vivian Cole tapes an eviction notice to Daniel's door. He reads it, smiles — and makes one phone call."],
+ ["One Phone Call","Daniel's call moves $40 million before lunch. Vivian's bank suddenly wants a meeting."],
+ ["The Inspection","A city inspector finds violations — all in Vivian's units, none in Daniel's. Someone tipped them off."],
+ ["Dinner Invitation","Vivian's daughter Lily meets the quiet tenant in 4B at the laundry room. He knows her name. She never told him."],
+ ["The Mortgage","Vivian learns her building loan was sold last week. The buyer asked for one thing: anonymity."],
+ ["Court Date","Vivian files in court to force Daniel out. His lawyer arrives with a single folder."],
+ ["The Folder","Inside the folder: the deed. Daniel didn't rent 4B last month. He bought the whole building."],
+ ["New Landlord","Vivian gets her own notice — from Daniel. Thirty days. Unless she agrees to one condition."],
+ ["The Condition","His condition shocks Lily more than Vivian: run the building together for one year."],
+ ["Keys","Season cliffhanger of the free run: Vivian takes the keys back — as his partner, not his tenant."]
+];
+var grid=document.getElementById('eps');
+EPS.forEach(function(e,i){
+  var b=document.createElement('button');b.className='ep';
+  b.innerHTML='<span class="n">EPISODE '+(i+1)+'</span><div class="t">'+e[0]+'</div>';
+  b.onclick=function(){selectEp(i)};
+  grid.appendChild(b);
+});
+// locked teasers 11-12
+[11,12].forEach(function(n){
+  var b=document.createElement('button');b.className='ep';
+  b.innerHTML='<span class="n">EPISODE '+n+'</span><span class="lock">🔒</span><div class="t">Unlock with Unlimited</div>';
+  b.onclick=function(){document.getElementById('modal').style.display='flex'};
+  grid.appendChild(b);
+});
+function selectEp(i){
+  document.getElementById('epNum').textContent=i+1;
+  document.getElementById('epTitle').textContent=EPS[i][0];
+  document.getElementById('epDesc').textContent=EPS[i][1];
+}
+function playEp(){
+  document.getElementById('mTitle').textContent='Premiere coming soon';
+  document.getElementById('mText').textContent='The pilot is in production. The first episodes premiere here — join the premiere list below to be notified.';
+  document.getElementById('modal').style.display='flex';
+}
+function closeModal(){document.getElementById('modal').style.display='none'}
+function joinList(){document.getElementById('joined').textContent='You are on the list. See you at the premiere.'}
+</script>
+</body>
+</html>
