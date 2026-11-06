@@ -101,7 +101,7 @@
 
   <section id="watch">
     <h2>Now showing — pilot series</h2>
-    <p class="sub"><b style="color:var(--gold2)">I Woke Up as Wu Zetian?! 《武则天竟是我？！》</b> A modern man opens his eyes in the Tang dynasty — in the body of Wu Meiniang, the future only female emperor of China. His body is hers. His brain is still a dude's. And he knows exactly how this story ends. Episodes 1–10 are free. <b style="color:var(--gold2)">Episode 1 is live — watch it right here.</b> It was produced end to end by the ReelDrama pipeline: human-written script, locked characters, generated scenes and voices, bilingual subtitles.</p>
+    <p class="sub"><b style="color:var(--gold2)">I Woke Up as Wu Zetian?! 《武则天竟是我？！》</b> A modern man opens his eyes in the Tang dynasty — in the body of Wu Meiniang, the future only female emperor of China. His body is hers. His brain is still a dude's. And he knows exactly how this story ends. Episode 1 is free. <b style="color:var(--gold2)">Episode 1 is live — watch it right here.</b> It was produced end to end by the ReelDrama pipeline: human-written script, locked characters, generated scenes and voices, bilingual subtitles.</p>
     <div class="watch">
       <div>
         <div class="phone"><div class="screen">
@@ -237,6 +237,138 @@ function selectEp(i){
 }
 function closeModal(){document.getElementById('modal').style.display='none'}
 function joinList(){document.getElementById('joined').textContent='You are on the list. See you at the premiere.'}
+</script>
+<script>
+// Live catalog sync: refresh the episode lists from the ReelDrama backend
+// (MongoDB-backed catalog). The static content above is the instant first
+// paint AND the fallback — if this fetch fails for any reason, the page
+// stays exactly as shipped. Adding an episode in the database updates
+// this page automatically; no site redeploy, no app release.
+(function(){
+  function onReady(fn){
+    if(document.readyState!=='loading'){ fn(); }
+    else{ document.addEventListener('DOMContentLoaded',fn); }
+  }
+  onReady(function(){
+    if(!window.fetch){ return; }
+    fetch('https://reeldrama-backend.onrender.com/catalog')
+      .then(function(r){ return r && r.ok ? r.json() : null; })
+      .then(function(data){
+        try{
+          if(!data || !Array.isArray(data.series)){ return; }
+          var byId={};
+          data.series.forEach(function(s){ if(s && s.id){ byId[s.id]=s; } });
+          if(byId.wuzetian){ applyWu(byId.wuzetian); }
+          // The Tenant series has no episode-list element on this page yet;
+          // applySeries() no-ops silently when its container is absent.
+          applySeries(byId.tenant,'eps-tenant',false);
+        }catch(e){ /* leave the static page untouched */ }
+      })
+      .catch(function(){ /* backend asleep or offline: static page stands */ });
+  });
+
+  function epNumOf(btn){
+    var nEl=btn.querySelector('.n');
+    var m=nEl && nEl.textContent.match(/(\d+)/);
+    return m ? parseInt(m[1],10) : null;
+  }
+
+  function setLock(btn,locked){
+    var lock=btn.querySelector('.lock');
+    if(locked && !lock){
+      lock=document.createElement('span');
+      lock.className='lock';
+      lock.textContent='\uD83D\uDD12';
+      var t=btn.querySelector('.t');
+      if(t){ btn.insertBefore(lock,t); }else{ btn.appendChild(lock); }
+    }else if(!locked && lock){
+      lock.parentNode.removeChild(lock);
+    }
+  }
+
+  function rdSelect(ep){
+    try{
+      document.getElementById('epNum').textContent=ep.n;
+      document.getElementById('epTitle').textContent=ep.title||'';
+      document.getElementById('epDesc').textContent=ep.hook||'';
+      var note=document.getElementById('epNote');
+      var player=document.getElementById('player');
+      if(ep.videoUrl && ep.free!==false){
+        var url=new URL(ep.videoUrl,window.location.href).href;
+        if(player && player.src!==url){ player.src=url; }
+        note.textContent='Now playing \u2014 Episode '+ep.n+', with Chinese audio and bilingual subtitles.';
+        if(player){
+          player.scrollIntoView({behavior:'smooth',block:'center'});
+          var p=player.play(); if(p && p.catch){ p.catch(function(){}); }
+        }
+      }else if(ep.free===false){
+        note.textContent='Episode '+ep.n+' is a members episode \u2014 it unlocks with ReelDrama Unlimited.';
+      }else{
+        note.textContent='Episode '+ep.n+' is in production now \u2014 it premieres here next. Join the premiere list below to be notified.';
+      }
+    }catch(e){}
+  }
+
+  function applySeries(series,gridId,isMain){
+    var grid=document.getElementById(gridId);
+    if(!grid || !series || !Array.isArray(series.episodes)){ return; }
+    var map={};
+    var existing=grid.querySelectorAll('.ep');
+    for(var i=0;i<existing.length;i++){
+      var en=epNumOf(existing[i]);
+      if(en!==null){ map[en]=existing[i]; }
+    }
+    var eps=series.episodes.slice().sort(function(a,b){ return a.n-b.n; });
+    eps.forEach(function(ep){
+      if(!ep || typeof ep.n!=='number'){ return; }
+      var btn=map[ep.n];
+      if(!btn){
+        btn=document.createElement('button');
+        btn.className='ep';
+        var nSpan=document.createElement('span'); nSpan.className='n';
+        var tDiv=document.createElement('div'); tDiv.className='t';
+        btn.appendChild(nSpan); btn.appendChild(tDiv);
+        var placed=false;
+        var all=grid.querySelectorAll('.ep');
+        for(var j=0;j<all.length;j++){
+          var an=epNumOf(all[j]);
+          if(an!==null && an>ep.n){ grid.insertBefore(btn,all[j]); placed=true; break; }
+        }
+        if(!placed){ grid.appendChild(btn); }
+        map[ep.n]=btn;
+      }
+      var nEl=btn.querySelector('.n');
+      if(nEl){ nEl.textContent='EPISODE '+ep.n; }
+      var tEl=btn.querySelector('.t');
+      if(tEl){ tEl.textContent=ep.title||''; }
+      if(ep.hook){ btn.title=ep.hook; }
+      setLock(btn,ep.free===false);
+      btn.setAttribute('data-video',ep.videoUrl?'1':'');
+      btn.setAttribute('data-free',ep.free===false?'0':'1');
+      if(isMain && window.EPS && EPS[ep.n-1]){
+        if(ep.title){ EPS[ep.n-1][0]=ep.title; }
+        if(ep.hook){ EPS[ep.n-1][1]=ep.hook; }
+      }
+      btn.onclick=function(){ rdSelect(ep); };
+    });
+  }
+
+  function applyWu(series){
+    applySeries(series,'eps',true);
+    // Episode 1 player: adopt the catalog URL only if it points somewhere
+    // genuinely different (the catalog's absolute URL for ep1.mp4 resolves
+    // to the same file as the static relative src, so normally no change).
+    try{
+      var ep1=null;
+      (series.episodes||[]).forEach(function(ep){ if(ep && ep.n===1){ ep1=ep; } });
+      var player=document.getElementById('player');
+      if(ep1 && ep1.videoUrl && player){
+        var url=new URL(ep1.videoUrl,window.location.href).href;
+        if(player.src!==url){ player.src=url; }
+      }
+    }catch(e){}
+  }
+})();
 </script>
 </body>
 </html>
